@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const { connectDb } = require("../config/mongo.config");
+const constants = require('../utils/constants');
 
 const jwtSecretString = "mysecret"; // TODO: move to .env
 const REFRESH_TOKENS = "refreshTokens";
@@ -54,7 +55,7 @@ const jwtService =
     refreshToken: async token => {
         const { db, client } = await connectDb();
 
-        const usersCollection = db.collection(constants.USERS);
+        const usersCollection = db.collection(constants.USERS_COLLECTION_NAME);
         const collection = db.collection(REFRESH_TOKENS);
 
         const userData = this.verifyJWTToken(token);
