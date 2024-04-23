@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const { connectDb } = require("../config/mongo.config");
 const constants = require('../utils/constants');
+const ObjectId = require("mongodb").ObjectId;
 
 const jwtSecretString = "mysecret"; // TODO: move to .env
 const REFRESH_TOKENS = "refreshTokens";
@@ -58,10 +59,12 @@ const jwtService =
         const usersCollection = db.collection(constants.USERS_COLLECTION_NAME);
         const collection = db.collection(REFRESH_TOKENS);
 
-        const userData = this.verifyJWTToken(token);
-
-        const user = await usersCollection.findOne({ userId: userData._id });
-        // var userDocument = user.hasNext() ? user.next() : null
+        const userData = jwtService.verifyJWTToken(token);
+        let user = await usersCollection.findOne({ _id: new ObjectId(userData._id) });
+        if (!user) {
+            const adminCollection = db.collection(constants.ADMIN_COLLECTION_NAME);
+            user = await adminCollection.findOne({ _id: new ObjectId(userData._id) });
+        }
 
         if (!user) {
             throw new Error(`Access is forbidden`);
